@@ -1,0 +1,42 @@
+{
+  "after": "0934fa969fd10f5f740e1d2d0c71e8ee4ff5ad0e", 
+  "before": "0934fa969fd10f5f740e1d2d0c71e8ee4ff5ad0e", 
+  "commits": [
+    {
+      "added": [
+        "README"
+      ], 
+      "author": {
+        "email": "grendel@twistedcode.net", 
+        "name": "Marek Habersack"
+      }, 
+      "id": "0934fa969fd10f5f740e1d2d0c71e8ee4ff5ad0e", 
+      "message": "Initial commit", 
+      "modified": [], 
+      "removed": [], 
+      "timestamp": "2010-07-25T02:50:59-07:00", 
+      "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest\/commit\/0934fa969fd10f5f740e1d2d0c71e8ee4ff5ad0e"
+    }
+  ], 
+  "ref": "refs\/heads\/master", 
+  "repository": {
+    "created_at": "2010\/07\/23 16:27:09 -0700", 
+    "description": "Testing repository for post-receive hooks, nothing of substance here", 
+    "fork": false, 
+    "forks": 0, 
+    "has_downloads": true, 
+    "has_issues": true, 
+    "has_wiki": true, 
+    "homepage": "", 
+    "name": "PostReceiveHooksTest", 
+    "open_issues": 0, 
+    "owner": {
+      "email": "grendel@twistedcode.net", 
+      "name": "grendello"
+    }, 
+    "private": false, 
+    "pushed_at": "2010\/07\/25 02:52:08 -0700", 
+    "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest", 
+    "watchers": 1
+  }
+}

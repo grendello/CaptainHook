@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C90B5F58-E9C8-4A67-8F2E-8E9134EB07F6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CaptainHook</RootNamespace>
+    <AssemblyName>CaptainHook.GitHub</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions, Version=1.0.61025.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assembly\AssemblyInfo.cs" />
+    <Compile Include="Base\CommonBase.cs" />
+    <Compile Include="Base\LogSeverity.cs" />
+    <Compile Include="GitHub\Author.cs" />
+    <Compile Include="GitHub\Commit.cs" />
+    <Compile Include="GitHub\CommitModifiedFile.cs" />
+    <Compile Include="GitHub\CommitWithDiff.cs" />
+    <Compile Include="GitHub\CommitWithDiffJsonWrapper.cs" />
+    <Compile Include="GitHub\Push.cs" />
+    <Compile Include="GitHub\Repository.cs" />
+    <Compile Include="Mail\Mailer.cs" />
+    <Compile Include="Mail\Template.cs" />
+    <Compile Include="Mail\TemplateElement.cs" />
+    <Compile Include="Mail\TemplateElementFirstCommit.cs" />
+    <Compile Include="Mail\TemplateElementPropertyReference.cs" />
+    <Compile Include="Mail\TemplateElementTemplate.cs" />
+    <Compile Include="Mail\TemplateElementText.cs" />
+    <Compile Include="Mail\TemplateFragment.cs" />
+    <Compile Include="Mail\TemplateFragmentArgument.cs" />
+    <Compile Include="Mail\TemplateFragmentMacro.cs" />
+    <Compile Include="Mail\TemplateFragmentPlainText.cs" />
+    <Compile Include="Mail\TemplateParser.cs" />
+    <Compile Include="Utils\CommitSource.cs" />
+    <Compile Include="Utils\Config.cs" />
+    <Compile Include="Utils\JsonDeserializer.cs" />
+    <Compile Include="Utils\XmlAttributeCollectionExtensions.cs" />
+    <Compile Include="Mail\FragmentParsedEventArguments.cs" />
+    <Compile Include="Mail\TemplateElementFactory.cs" />
+    <Compile Include="Mail\TemplateElementMailHeader.cs" />
+    <Compile Include="Mail\ITemplate.cs" />
+    <Compile Include="Mail\TemplateElementSynthetic.cs" />
+    <Compile Include="Mail\TemplateElementArgument.cs" />
+    <Compile Include="GitHub\Blob.cs" />
+    <Compile Include="GitHub\BlobJsonWrapper.cs" />
+    <Compile Include="Utils\SmtpServerConfig.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Base\" />
+    <Folder Include="GitHub\" />
+    <Folder Include="Mail\" />
+    <Folder Include="Utils\" />
+    <Folder Include="Worker\" />
+  </ItemGroup>
+</Project>

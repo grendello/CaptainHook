@@ -1,0 +1,13 @@
+@Header(X-Mailer=@Version@)@
+@Header(X-Git-Branch=@this.Ref@)@
+@Header(X-Git-Repository=@this.Repository.Name@)@
+@Subject(@FirstCommit.ID(8)@: @FirstCommit.MessageSummary(72)@)@
+
+Branch: @this.Ref@
+  Home: @this.Repository.Url@
+
+A list of commits follows
+---------------------------
+
+@Commits@
+

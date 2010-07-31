@@ -1,0 +1,50 @@
+{
+  "after": "0f0f9626bfa9d8675e39f9c51a95efb40eb22f18", 
+  "before": "8cce66c65ac62e4a187d3db1237f97148f6a87b8", 
+  "commits": [
+    {
+      "added": [
+        "Test3.txt", 
+        "Test4.txt"
+      ], 
+      "author": {
+        "email": "grendel@twistedcode.net", 
+        "name": "Marek Habersack"
+      }, 
+      "id": "0f0f9626bfa9d8675e39f9c51a95efb40eb22f18", 
+      "message": "Modified one file and added two more in a single commit", 
+      "modified": [
+        "README"
+      ], 
+      "removed": [], 
+      "timestamp": "2010-07-26T03:19:08-07:00", 
+      "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest\/commit\/0f0f9626bfa9d8675e39f9c51a95efb40eb22f18"
+    }
+  ], 
+  "forced": false, 
+  "pusher": {
+    "email": "grendel@twistedcode.net", 
+    "name": "grendello"
+  }, 
+  "ref": "refs\/heads\/master", 
+  "repository": {
+    "created_at": "2010\/07\/23 16:27:09 -0700", 
+    "description": "Testing repository for post-receive hooks, nothing of substance here", 
+    "fork": false, 
+    "forks": 0, 
+    "has_downloads": true, 
+    "has_issues": true, 
+    "has_wiki": true, 
+    "homepage": "", 
+    "name": "PostReceiveHooksTest", 
+    "open_issues": 0, 
+    "owner": {
+      "email": "grendel@twistedcode.net", 
+      "name": "grendello"
+    }, 
+    "private": false, 
+    "pushed_at": "2010\/07\/26 03:19:26 -0700", 
+    "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest", 
+    "watchers": 1
+  }
+}
