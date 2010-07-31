@@ -32,6 +32,7 @@ using System.Text;
 using System.Threading;
 using System.Web;
 using System.Web.Configuration;
+using System.Web.Util;
 
 using CaptainHook.Base;
 using CaptainHook.GitHub;
@@ -69,22 +70,30 @@ namespace CaptainHook.Web.Handlers
 				return;
 			}
 
-			if (String.Compare ("application/json", req.ContentType, StringComparison.OrdinalIgnoreCase) != 0) {
+			if (String.Compare ("application/x-www-form-urlencoded", req.ContentType, StringComparison.OrdinalIgnoreCase) != 0) {
 				InvalidRequest (context.Response, 415);
 				return;
 			}
 
-			string csID = req.QueryString ["csid"];
-			string authID = req.QueryString ["authid"];
+			string path = VirtualPathUtility.GetFileName (req.Path);
+			int underscore = path.IndexOf ('_');
+			if (underscore == -1 || !path.EndsWith (".github")) {
+				Log (LogSeverity.Error, "Invalid URL format. Expected: authid_csid.github.");
+				InvalidRequest (context.Response, 400);
+			}
+
+			path = path.Substring (0, path.Length - 7);
+			string authID = path.Substring (0, underscore);
+			string csID = path.Substring (underscore + 1);
 
 			if (String.IsNullOrEmpty (csID)) {
-				Log (LogSeverity.Error, "Missing 'csid' parameter in the query (commit source ID)");
+				Log (LogSeverity.Error, "Missing 'csid' parameter in the request (commit source ID)");
 				InvalidRequest (context.Response, 400);
 				return;
 			}
 
 			if (String.IsNullOrEmpty (authID)) {
-				Log (LogSeverity.Error, "Missing 'authid' parameter in the query (authentication ID)");
+				Log (LogSeverity.Error, "Missing 'authid' parameter in the request (authentication ID)");
 				InvalidRequest (context.Response, 400);
 				return;
 			}
@@ -167,7 +176,21 @@ namespace CaptainHook.Web.Handlers
 					break;
 
 				try {
-					Push push = des.Deserialize<Push> (File.ReadAllText (filePath));
+					string fileText = HttpUtility.UrlDecode (File.ReadAllText (filePath));
+					if (String.IsNullOrEmpty (fileText)) {
+						Log (LogSeverity.Error, "Empty payload");
+						PutWorkItemBack (filePath, ignoreWorkItems);
+						continue;
+					}
+
+					if (!fileText.StartsWith ("payload=", StringComparison.Ordinal)) {
+						Log (LogSeverity.Error, "Invalid payload format");
+						PutWorkItemBack (filePath, ignoreWorkItems);
+						continue;
+					}
+
+					fileText = fileText.Substring (8);
+					Push push = des.Deserialize<Push> (fileText);
 					push.CHAuthID = senderState.CommitSourceID;
 					if (mailer.Send (push)) {
 						try {
