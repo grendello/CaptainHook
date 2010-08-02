@@ -67,6 +67,8 @@ namespace CaptainHook.Mail
 				{"Subject", new MacroMapEntry (typeof (Push), Macro_Push_Subject) },
 				{"FirstCommit", new MacroMapEntry (typeof (Push), Macro_Push_FirstCommit) },
 				{"FirstCommit.MessageSummary", new MacroMapEntry (typeof (Push), Macro_Push_FirstCommit_MessageSummary) },
+				{"AffectedDirectories", new MacroMapEntry (typeof (Push), Macro_Push_AffectedDirectories) },
+				{"NumberOfCommits", new MacroMapEntry (typeof (Push), Macro_Push_NumberOfCommits) },
 
 				// Commit macros
 				{"ChangedPaths", new MacroMapEntry (typeof (Commit), Macro_Commit_ChangedPaths)},
@@ -152,7 +154,6 @@ namespace CaptainHook.Mail
 				if (processor != null)
 					return processor (macro);
 			}
-
 			var ret = new TemplateElementPropertyReference<TData> (name);
 			if (ret.IsCollection) {
 				Type tt = typeof(Template<>);
@@ -260,7 +261,7 @@ namespace CaptainHook.Mail
 		{
 			string macroName = fragment.MacroName;
 			if (String.Compare ("FirstCommit.MessageSummary", macroName, StringComparison.Ordinal) != 0)
-				throw new ArgumentException ("Macro name must be with 'FirstCommit.MessageSummary'", "fragment");
+				throw new ArgumentException ("Macro name must be 'FirstCommit.MessageSummary'", "fragment");
 
 			var propref = new TemplateElementPropertyReference<Commit> ("Message");
 			return new TemplateElementSynthetic<Push> (GetElementArgumentList (fragment), (Push data, List<TemplateElementArgument> args) =>
@@ -280,10 +281,101 @@ namespace CaptainHook.Mail
 			};
 		}
 
+		void AddUniqueDirectoriesToCache (List<string> paths, IDictionary<string, bool> cache)
+		{
+			if (paths == null || paths.Count == 0)
+				return;
+
+			string dir;
+			int lastSlash;
+			foreach (string p in paths) {
+				if (String.IsNullOrEmpty (p))
+					continue;
+
+				lastSlash = p.LastIndexOf ('/');
+				if (lastSlash == -1)
+					dir = "/";
+				else
+					dir = p.Substring (0, lastSlash + 1);
+
+				if (cache.ContainsKey (dir))
+					continue;
+
+				cache.Add (dir, true);
+			}
+		}
+
+		TemplateElement Macro_Push_AffectedDirectories (TemplateFragmentMacro fragment)
+		{
+			string macroName = fragment.MacroName;
+			if (String.Compare ("AffectedDirectories", macroName, StringComparison.Ordinal) != 0)
+				throw new ArgumentException ("Macro name must be 'AffectedDirectories'", "fragment");
+
+			return new TemplateElementListMailHeader<Push> (GetElementArgumentList (fragment), (Push data, List<string> values) =>
+			{
+				List<Commit> commits = data.Commits;
+				if (commits == null || commits.Count == 0)
+					return;
+
+				var paths = new SortedDictionary<string, bool> (StringComparer.Ordinal);
+				foreach (Commit c in commits) {
+					AddUniqueDirectoriesToCache (c.Added, paths);
+					AddUniqueDirectoriesToCache (c.Modified, paths);
+					AddUniqueDirectoriesToCache (c.Removed, paths);
+				}
+
+				foreach (string dir in paths.Keys)
+					values.Add (dir);
+			}) {
+				SkipNewlineIfLineEmpty = true
+			};
+		}
+
+		TemplateElement Macro_Push_NumberOfCommits (TemplateFragmentMacro fragment)
+		{
+			string macroName = fragment.MacroName;
+			if (String.Compare ("NumberOfCommits", macroName, StringComparison.Ordinal) != 0)
+				throw new ArgumentException ("Macro name must be 'NumberOfCommits'", "fragment");
+
+			return new TemplateElementSynthetic<Push> (GetElementArgumentList (fragment), (Push data, List<TemplateElementArgument> args) =>
+			{
+				List<Commit> commits = data.Commits;
+				if (commits == null || commits.Count == 0)
+					return null;
+
+				if (args == null || args.Count == 0)
+					return null;
+
+				var sb = new StringBuilder ();
+				foreach (TemplateElementArgument a in args)
+					sb.Append (a.Generate (data));
+
+				string arg = sb.ToString ();
+				int comma = arg.IndexOf (',');
+				int min = 2;
+
+				if (comma != -1) {
+					int v;
+
+					if (Int32.TryParse (arg.Substring (0, comma), out v)) {
+						min = v;
+						arg = arg.Substring (comma + 1);
+					}
+				}
+
+				if (commits.Count < min)
+					return null;
+
+				return arg;
+			}) {
+				SkipNewlineIfLineEmpty = true
+			};
+		}
+
 		TemplateElement Macro_Commit_ChangedPaths (TemplateFragmentMacro fragment)
 		{
 			return new TemplateElementSynthetic<Commit> (GetElementArgumentList (fragment), (Commit data, List<TemplateElementArgument> args) =>
-			{
+				{
 				List<string> modified = data.Modified;
 				if (modified == null || modified.Count == 0)
 					return null;

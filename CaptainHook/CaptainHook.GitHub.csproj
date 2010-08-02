@@ -71,6 +71,7 @@
     <Compile Include="GitHub\Blob.cs" />
     <Compile Include="GitHub\BlobJsonWrapper.cs" />
     <Compile Include="Utils\SmtpServerConfig.cs" />
+    <Compile Include="Mail\TemplateElementListMailHeader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -78,6 +79,5 @@
     <Folder Include="GitHub\" />
     <Folder Include="Mail\" />
     <Folder Include="Utils\" />
-    <Folder Include="Worker\" />
   </ItemGroup>
 </Project>

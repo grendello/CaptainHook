@@ -268,6 +268,18 @@ namespace CaptainHook.Mail
 
 		void SetMessageHeader (TemplateElementMailHeader element, MailMessage message, TData item)
 		{
+			var headerList = element as TemplateElementListMailHeader<TData>;
+			if (headerList != null) {
+				headerList.Generate (item);
+				List<string> values = headerList.Values;
+				if (values == null || values.Count == 0)
+					return;
+
+				string headerName = element.Name;
+				foreach (string v in values)
+					message.Headers.Add (headerName, v);
+			}
+
 			string val = element.Generate (item);
 			if (String.Compare ("subject", element.Name, StringComparison.OrdinalIgnoreCase) == 0) {
 				message.Subject = val;

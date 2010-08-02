@@ -1,8 +1,8 @@
 // 
-//  Authors:
+//  Author:
 //    Marek Habersack grendel@twistedcode.net
 // 
-//  Copyright (c) 2010, Novell, Inc (http://novell.com/)
+//  Copyright (c) 2010, Marek Habersack
 // 
 //  All rights reserved.
 // 
@@ -11,7 +11,7 @@
 //     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in
 //       the documentation and/or other materials provided with the distribution.
-//     * Neither the name of Novell, Inc nor names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//     * Neither the name of Marek Habersack nor names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 // 
 //  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 //  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -27,32 +27,22 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CaptainHook.Mail
 {
-	public class TemplateElementMailHeader : TemplateElement
+	public class TemplateElementListMailHeader <TData> : TemplateElementMailHeader
 	{
-		List<TemplateElementArgument> arguments;
+		Action<TData, List<string>> generator;
 
-		protected List<TemplateElementArgument> Arguments {
-			get { return arguments; }
-		}
-		
-		public string Name { get; set; }
+		public List <string> Values { get; set; }
 
-		public TemplateElementMailHeader (List<TemplateElementArgument> arguments)
+		public TemplateElementListMailHeader (List<TemplateElementArgument> arguments, Action<TData, List<string>> generator)
+			: base(arguments)
 		{
-			this.arguments = arguments;
-		}
+			if (generator == null)
+				throw new ArgumentNullException ("generator");
 
-		public TemplateElementMailHeader (string name, List<TemplateElementArgument> arguments)
-			: this (arguments)
-		{
-			if (String.IsNullOrEmpty (name))
-				throw new ArgumentNullException ("name");
-
-			this.Name = name;
+			this.generator = generator;
 		}
 
 		public override string Generate (object data)
@@ -60,23 +50,19 @@ namespace CaptainHook.Mail
 			if (data == null)
 				throw new ArgumentNullException ("data");
 
+			List<TemplateElementArgument> arguments = Arguments;
 			if (arguments == null || arguments.Count == 0)
-				return String.Empty;
+				return null;
+			Name = arguments[0].Generate (data);
 
-			var sb = new StringBuilder ();
-			foreach (TemplateElementArgument arg in arguments)
-				sb.Append (arg.Generate (data));
+			var list = new List<string> ();
+			generator ((TData)data, list);
+			if (list != null && list.Count > 0)
+				Values = list;
+			else
+				Values = null;
 
-			string ret = sb.ToString ();
-			if (Name != null)
-				return ret;
-
-			int eq = ret.IndexOf ('=');
-			if (eq == -1)
-				throw new InvalidOperationException ("Name not set and the generated string does not contain any '=' character.");
-
-			Name = ret.Substring (0, eq);
-			return ret.Substring (eq + 1);
+			return null;
 		}
 	}
 }
