@@ -10,15 +10,15 @@
     
     <!-- If not present, defaults to localhost:25 and no credentials. If you're hosting the handler under Mono and
          attempts to use SMTPAUTH with TLS fail, please read http://www.mono-project.com/FAQ:_Security#Does_SSL_works_for_SMTP.2C_like_GMail_.3F -->
-    <!-- <smtpServer host="mysmtp.host" port="587" enableSSL="true" user="myuser" password="mypassword"/> -->
+    <smtpServer host="mysmtp.host" port="587" enableSSL="true" user="myuser" password="mypassword"/>
   </options>
 
   <!-- Each commit source must have a unique ID -->
   <commitSource id="f6ec6290-7143-4d41-a3ae-0b819bab7781" sendAsCommitter="true">
-    <!-- Required -->
+    <!-- Required if the 'sendAsCommitter' attribute for the 'commitSource' element is false -->
     <from name="CaptainHook" address="noreply@example.com" />
     
-    <!-- Optional. Defaults to <from> above -->
+    <!-- Optional. Defaults to <from> above or to the committer's mail if sendAsCommitter is true  -->
     <replyTo name="My Mailing List" address="somelist@example.com" />
     
     <!-- A list of TO recipients -->
