@@ -154,11 +154,29 @@ namespace CaptainHook.Mail
 			AddAddresses (ret.Bcc, cs.BCCRecipients);
 			AddAddresses (ret.To, cs.TORecipients);
 
-			Author author = cs.From;
-			ret.From = new MailAddress (author.Email, author.Name);
+			if (cs.SendAsCommitter && typeof(TData) == typeof(Push)) {
+				var push = item as Push;
+				List<Commit> commits = push.Commits;
+				if (commits == null || commits.Count == 0) {
+					Log (LogSeverity.Error, "Unable to determine From address for the mail - no commits and SendAsCommiter is true");
+					return null;
+				}
 
-			author = cs.ReplyTo;
-			ret.ReplyTo = new MailAddress (author.Email, author.Name);
+				Author author = commits[0].Author;
+				ret.From = new MailAddress (author.Email, author.Name);
+
+				Author replyTo = cs.ReplyTo;
+				if (replyTo == null)
+					ret.ReplyTo = new MailAddress (author.Email, author.Name);
+				else
+					ret.ReplyTo = new MailAddress (replyTo.Email, replyTo.Name);
+			} else {
+				Author author = cs.From;
+				ret.From = new MailAddress (author.Email, author.Name);
+
+				author = cs.ReplyTo;
+				ret.ReplyTo = new MailAddress (author.Email, author.Name);
+			}
 
 			return ret;
 		}

@@ -39,6 +39,7 @@ namespace CaptainHook.Utils
 		public string ID { get; private set; }
 		public Author From { get; set; }
 		public Author ReplyTo { get; set; }
+		public bool SendAsCommitter { get; set; }
 		public List <Author> TORecipients { get; private set; }
 		public List <Author> CCRecipients { get; private set; }
 		public List <Author> BCCRecipients { get; private set; }
@@ -59,9 +60,10 @@ namespace CaptainHook.Utils
 			
 			XmlAttributeCollection attrs = node.Attributes;
 			ID = attrs.GetRequired<string> ("id");
-
+			SendAsCommitter = attrs.GetOptional ("sendAsCommitter", false);
+			
 			Author addr = ReadEmail (node.SelectSingleNode ("//from"));
-			if (addr == null)
+			if (!SendAsCommitter && addr == null)
 				throw new InvalidOperationException (String.Format ("Required <from> element is missing from commit source with id '{0}'", ID));
 			From = addr;
 
