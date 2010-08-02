@@ -2,3 +2,4 @@
 	- CommonBase.Log should log to configurable sources
 * Tests
 * Watch template files and CaptainHook.xml file for changes and reload if they're modified
+* Implement support for multiple arguments in the template parser
