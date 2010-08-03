@@ -8,8 +8,5 @@
 Branch: @this.Ref@
   Home: @this.Repository.Url@
 
-A list of commits follows
----------------------------
-
 @Commits@
 

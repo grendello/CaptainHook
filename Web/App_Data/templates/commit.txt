@@ -3,10 +3,7 @@ Author: @this.Author@
   Date: @this.TimeStamp@
    URL: @this.Url@
 
-Log Message:
-------------
 @this.Message@
-------------
 
 @ChangedPaths(My Changed paths:)@@AddedPaths(Added paths:)@@RemovedPaths(Removed paths:)@@this.Diff@
 
