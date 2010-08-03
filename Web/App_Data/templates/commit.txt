@@ -5,5 +5,5 @@ Author: @this.Author@
 
 @this.Message@
 
-@ChangedPaths(My Changed paths:)@@AddedPaths(Added paths:)@@RemovedPaths(Removed paths:)@@this.Diff@
+@ChangedPaths(Changed paths:)@@AddedPaths(Added paths:)@@RemovedPaths(Removed paths:)@@this.Diff@
 
