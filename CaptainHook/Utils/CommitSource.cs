@@ -40,6 +40,7 @@ namespace CaptainHook.Utils
 		public Author From { get; set; }
 		public Author ReplyTo { get; set; }
 		public bool SendAsCommitter { get; set; }
+		public bool UseCommitterAsSenderName { get; set; }
 		public List <Author> TORecipients { get; private set; }
 		public List <Author> CCRecipients { get; private set; }
 		public List <Author> BCCRecipients { get; private set; }
@@ -61,6 +62,7 @@ namespace CaptainHook.Utils
 			XmlAttributeCollection attrs = node.Attributes;
 			ID = attrs.GetRequired<string> ("id");
 			SendAsCommitter = attrs.GetOptional ("sendAsCommitter", false);
+			UseCommitterAsSenderName = attrs.GetOptional ("useCommitterAsSenderName", false);
 			
 			Author addr = ReadEmail (node.SelectSingleNode ("//from"));
 			if (!SendAsCommitter && addr == null)

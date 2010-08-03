@@ -1,6 +1,7 @@
 @Header(X-Mailer=@Version@)@
 @Header(X-Git-Branch=@this.Ref@)@
 @Header(X-Git-Repository=@this.Repository.Name@)@
+@Header(X-Git-Committer=@FirstCommit.Author.Email@)@
 @AffectedDirectories(X-Git-Modified-Dir)@
 @Subject([@this.Repository.Owner.Name@/@this.Repository.Name@]@NumberOfCommits(2, [@this.Commits.Count@ commits])@ @FirstCommit.ID(8)@: @FirstCommit.MessageSummary(72)@)@
 

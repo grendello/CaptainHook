@@ -154,16 +154,17 @@ namespace CaptainHook.Mail
 			AddAddresses (ret.Bcc, cs.BCCRecipients);
 			AddAddresses (ret.To, cs.TORecipients);
 
+			var push = item as Push;
+			Author committer = GetCommitterAddress (push);
+			Author author;
+
 			if (cs.SendAsCommitter && typeof(TData) == typeof(Push)) {
-				var push = item as Push;
-				List<Commit> commits = push.Commits;
-				if (commits == null || commits.Count == 0) {
+				if (committer == null) {
 					Log (LogSeverity.Error, "Unable to determine From address for the mail - no commits and SendAsCommiter is true");
 					return null;
 				}
 
-				Author author = commits[0].Author;
-				ret.From = new MailAddress (author.Email, author.Name);
+				ret.From = new MailAddress (committer.Email, committer.Name);
 
 				author = cs.From;
 				if (author != null)
@@ -177,15 +178,31 @@ namespace CaptainHook.Mail
 				else
 					ret.ReplyTo = new MailAddress (replyTo.Email, replyTo.Name);
 			} else {
-				Author author = cs.From;
-				ret.From = new MailAddress (author.Email, author.Name);
+				author = cs.From;
+				string authorName;
+
+				if (cs.UseCommitterAsSenderName && committer != null)
+					authorName = String.Format ("{0} ({1})", committer.Name, committer.Email);
+				else
+					authorName = author.Name;
+
+				ret.From = new MailAddress (author.Email, authorName);
 				ret.Sender = ret.From;
 
 				author = cs.ReplyTo;
 				ret.ReplyTo = new MailAddress (author.Email, author.Name);
 			}
-			
+
 			return ret;
+		}
+
+		Author GetCommitterAddress (Push push)
+		{
+			List<Commit> commits = push.Commits;
+			if (commits == null || commits.Count == 0)
+				return null;
+
+			return commits[0].Author;
 		}
 
 		void AddAddresses (MailAddressCollection coll, List<Author> list)

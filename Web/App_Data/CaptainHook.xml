@@ -14,7 +14,11 @@
   </options>
 
   <!-- Each commit source must have a unique ID -->
-  <commitSource id="f6ec6290-7143-4d41-a3ae-0b819bab7781" sendAsCommitter="true">
+  <!--
+       useCommitterAsSenderName="true" will cause the <from name=""/> value to be ignored and the committer's email address
+       will be used in the name part of the From: header. It will have effect only when sendAsCommitter="false"
+  -->
+  <commitSource id="f6ec6290-7143-4d41-a3ae-0b819bab7781" sendAsCommitter="false" useCommitterAsSenderName="true">
     <!-- Required if the 'sendAsCommitter' attribute for the 'commitSource' element is false -->
     <!-- If sendAsCommitter is set to true, then the address below (if defined) is used as the envelope sender and the
          committer's mail as the From: value header. If <from> is missing, which in this case is allowed, committer's
