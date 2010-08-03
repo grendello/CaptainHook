@@ -165,6 +165,12 @@ namespace CaptainHook.Mail
 				Author author = commits[0].Author;
 				ret.From = new MailAddress (author.Email, author.Name);
 
+				author = cs.From;
+				if (author != null)
+					ret.Sender = new MailAddress (author.Email, author.Name);
+				else
+					ret.Sender = ret.From;
+
 				Author replyTo = cs.ReplyTo;
 				if (replyTo == null)
 					ret.ReplyTo = new MailAddress (author.Email, author.Name);
@@ -173,11 +179,12 @@ namespace CaptainHook.Mail
 			} else {
 				Author author = cs.From;
 				ret.From = new MailAddress (author.Email, author.Name);
+				ret.Sender = ret.From;
 
 				author = cs.ReplyTo;
 				ret.ReplyTo = new MailAddress (author.Email, author.Name);
 			}
-
+			
 			return ret;
 		}
 
