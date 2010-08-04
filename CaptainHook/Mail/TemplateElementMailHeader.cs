@@ -68,14 +68,13 @@ namespace CaptainHook.Mail
 				sb.Append (arg.Generate (data));
 
 			string ret = sb.ToString ();
-			if (Name != null)
-				return ret;
-
 			int eq = ret.IndexOf ('=');
 			if (eq == -1)
-				throw new InvalidOperationException ("Name not set and the generated string does not contain any '=' character.");
+				return ret;
 
-			Name = ret.Substring (0, eq);
+			if (String.IsNullOrEmpty (Name))
+				Name = ret.Substring (0, eq);
+
 			return ret.Substring (eq + 1);
 		}
 	}
