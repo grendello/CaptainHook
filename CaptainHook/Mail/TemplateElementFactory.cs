@@ -29,11 +29,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using CaptainHook.Base;
 using CaptainHook.GitHub;
 
 namespace CaptainHook.Mail
 {
-	public class TemplateElementFactory <TData>
+	public class TemplateElementFactory <TData> : CommonBase
 	{
 		sealed class MacroMapEntry
 		{
@@ -48,6 +49,7 @@ namespace CaptainHook.Mail
 		}
 
 		static readonly string newline = Environment.NewLine;
+		static readonly char[] argumentSplitChars = { ',' };
 
 		Dictionary <string, MacroMapEntry> macroMap;
 		string basePath;
@@ -62,6 +64,7 @@ namespace CaptainHook.Mail
 				// Global macros
 				{"Header", new MacroMapEntry (null, Macro_Global_Header) },
 				{"Version", new MacroMapEntry (null, Macro_Global_Version) },
+				{"IfDifferent", new MacroMapEntry (null, Macro_Global_IfDifferent) },
 
 				// Push macros
 				{"Subject", new MacroMapEntry (typeof (Push), Macro_Push_Subject) },
@@ -74,7 +77,7 @@ namespace CaptainHook.Mail
 				{"ChangedPaths", new MacroMapEntry (typeof (Commit), Macro_Commit_ChangedPaths)},
 				{"AddedPaths", new MacroMapEntry (typeof (Commit), Macro_Commit_AddedPaths)},
 				{"RemovedPaths", new MacroMapEntry (typeof (Commit), Macro_Commit_RemovedPaths)},
-				{"Diff", new MacroMapEntry (typeof (Commit), Macro_Commit_Diff)}
+				{"FullDiff", new MacroMapEntry (typeof (Commit), Macro_Commit_FullDiff)}
 			};
 		}
 
@@ -131,7 +134,7 @@ namespace CaptainHook.Mail
 		{
 			MacroMapEntry mapEntry;
 			if (macroMap.TryGetValue (name, out mapEntry) && mapEntry != null && mapEntry.Processor != null &&
-				(mapEntry.ValidFor == null || mapEntry.ValidFor == typeof (TData)))
+				(mapEntry.ValidFor == null || mapEntry.ValidFor == typeof(TData)))
 				return mapEntry.Processor;
 
 			return null;
@@ -193,6 +196,40 @@ namespace CaptainHook.Mail
 		{
 			// TODO: generate the version from assembly metadata
 			return new TemplateElementText ("CaptainHook 0.1");
+		}
+
+		TemplateElement Macro_Global_IfDifferent (TemplateFragmentMacro fragment)
+		{
+			return new TemplateElementSynthetic<TData> (GetElementArgumentList (fragment), (TData data, List<TemplateElementArgument> args) =>
+			{
+				if (args == null || args.Count == 0)
+					return null;
+
+				var sb = new StringBuilder ();
+				foreach (TemplateElementArgument a in args)
+					sb.Append (a.Generate (data));
+
+				string argstr = sb.ToString ();
+				if (argstr.Length == 0)
+					return null;
+
+				string[] arglist = argstr.Split (argumentSplitChars);
+				if (arglist.Length < 3) {
+					Log (LogSeverity.Error, "Not enough arguments for the IfDifferent macro (expected 3, got {0}", arglist.Length);
+					return null;
+				}
+
+				string heading = arglist[0];
+				string left = arglist[1];
+				string right = String.Join (",", arglist, 2, arglist.Length - 2);
+
+				if (String.Compare (left, right, StringComparison.Ordinal) == 0)
+					return null;
+
+				return heading + left;
+			}) {
+				SkipNewlineIfLineEmpty = true
+			};
 		}
 
 		TemplateElement Macro_Push_Subject (TemplateFragmentMacro fragment)
@@ -441,7 +478,7 @@ namespace CaptainHook.Mail
 			};
 		}
 
-		TemplateElement Macro_Commit_Diff (TemplateFragmentMacro fragment)
+		TemplateElement Macro_Commit_FullDiff (TemplateFragmentMacro fragment)
 		{
 			return new TemplateElementSynthetic<Commit> (GetElementArgumentList (fragment), (Commit data, List<TemplateElementArgument> args) =>
 			{

@@ -1,0 +1,48 @@
+{
+  "after": "7d9088bc6bf0b6f6f25533955d093328230ca196", 
+  "before": "008d92fcd45c6d0fad55ef920ae530fecebd3bb0", 
+  "commits": [
+    {
+      "added": [], 
+      "author": {
+        "email": "d.duck@example.com", 
+        "name": "Donald Duck"
+      }, 
+      "id": "7d9088bc6bf0b6f6f25533955d093328230ca196", 
+      "message": "Just testing committer support", 
+      "modified": [
+        "README"
+      ], 
+      "removed": [], 
+      "timestamp": "2010-08-11T15:07:38-07:00", 
+      "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest\/commit\/7d9088bc6bf0b6f6f25533955d093328230ca196"
+    }
+  ], 
+  "compare": "http:\/\/github.com\/grendello\/PostReceiveHooksTest\/compare\/008d92f...7d9088b", 
+  "forced": false, 
+  "pusher": {
+    "email": "grendel@twistedcode.net", 
+    "name": "grendello"
+  }, 
+  "ref": "refs\/heads\/master", 
+  "repository": {
+    "created_at": "2010\/07\/23 16:27:09 -0700", 
+    "description": "Testing repository for post-receive hooks, nothing of substance here", 
+    "fork": false, 
+    "forks": 0, 
+    "has_downloads": true, 
+    "has_issues": true, 
+    "has_wiki": true, 
+    "homepage": "", 
+    "name": "PostReceiveHooksTest", 
+    "open_issues": 0, 
+    "owner": {
+      "email": "grendel@twistedcode.net", 
+      "name": "grendello"
+    }, 
+    "private": false, 
+    "pushed_at": "2010\/08\/11 15:09:33 -0700", 
+    "url": "http:\/\/github.com\/grendello\/PostReceiveHooksTest", 
+    "watchers": 1
+  }
+}

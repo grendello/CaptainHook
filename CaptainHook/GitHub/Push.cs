@@ -37,7 +37,8 @@ namespace CaptainHook.GitHub
 		// Members sent to us by GitHub
 		public string After { get; set; }
 		public string Before { get; set; }
-		public List <Commit> Commits { get; set; }
+		public List<Commit> Commits { get; set; }
+		public Author Pusher { get; set; }
 		public string Ref { get; set; }
 		public Repository Repository { get; set; }
 

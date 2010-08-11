@@ -1,9 +1,10 @@
-Commit: @this.ID@
-Author: @this.Author@
-  Date: @this.TimeStamp@
-   URL: @this.Url@
+   Commit: @this.ID@
+   Author: @this.Author@
+@IfDifferent(Committer: ,@this.Diff.Committer@,@this.Diff.Author@)@
+     Date: @this.TimeStamp@
+      URL: @this.Url@
 
 @this.Message@
 
-@ChangedPaths(Changed paths:)@@AddedPaths(Added paths:)@@RemovedPaths(Removed paths:)@@this.Diff@
+@ChangedPaths(Changed paths:)@@AddedPaths(Added paths:)@@RemovedPaths(Removed paths:)@@FullDiff@
 
