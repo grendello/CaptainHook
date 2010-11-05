@@ -54,6 +54,30 @@ namespace CaptainHook.Web
 			Config config = Config.Instance;
 			config.RootPath = configDir;
 			config.LoadConfigFile (configFile);
+
+			string csDataDir = Path.Combine (Config.Instance.RootPath, "data");
+			if (!Directory.Exists (csDataDir))
+				return;
+
+			try {
+				string[] files = Directory.GetFiles (csDataDir, "*.json.processing", SearchOption.AllDirectories);
+				if (files == null || files.Length == 0)
+					return;
+
+				string newFile;
+				foreach (string f in files) {
+					newFile = f.Substring (0, f.Length - 11);
+					try {
+						File.Move (f, newFile);
+					} catch (Exception ex) {
+						Console.Error.WriteLine ("Error moving {0} to {1}", f, newFile);
+						Console.Error.WriteLine (ex);
+					}
+				}
+			} catch (Exception ex) {
+				Console.Error.WriteLine ("Error processing stale files on application startup:");
+				Console.Error.WriteLine (ex);
+			}
 		}
 	}
 }

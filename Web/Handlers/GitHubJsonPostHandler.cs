@@ -210,13 +210,14 @@ namespace CaptainHook.Web.Handlers
 		string GetNextWorkItem (string csDataDir, List<string> ignoreWorkItems)
 		{
 			lock (senderDirectoryLock) {
+				string file = null;
+
 				try {
 					string[] files = Directory.GetFiles (csDataDir, "*.json");
 					if (files == null || files.Length == 0)
 						return null;
 
 					Array.Sort<string> (files);
-					string file = null;
 
 					foreach (string f in files) {
 						if (ignoreWorkItems.Contains (f))
@@ -233,6 +234,8 @@ namespace CaptainHook.Web.Handlers
 
 					return newFile;
 				} catch (Exception ex) {
+					if (!String.IsNullOrEmpty (file))
+						PutWorkItemBack (file + ".processing", ignoreWorkItems);
 					Log (ex, "Failed to retrieve next work item from directory '{4}'. Exception '{1}' was thrown: {2}", csDataDir);
 					return null;
 				}
@@ -244,7 +247,7 @@ namespace CaptainHook.Web.Handlers
 			if (String.IsNullOrEmpty (filePath))
 				return;
 
-			if (!filePath.EndsWith (".processing", StringComparison.Ordinal))
+			if (!filePath.EndsWith (".processing", StringComparison.Ordinal) || !File.Exists (filePath))
 				return;
 
 			string newFilePath = filePath.Substring (0, filePath.Length - 11);
