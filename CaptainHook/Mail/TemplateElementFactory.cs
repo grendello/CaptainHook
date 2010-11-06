@@ -195,7 +195,7 @@ namespace CaptainHook.Mail
 		TemplateElement Macro_Global_Version (TemplateFragmentMacro fragment)
 		{
 			// TODO: generate the version from assembly metadata
-			return new TemplateElementText ("CaptainHook 0.1");
+			return new TemplateElementText ("CaptainHook 0.2");
 		}
 
 		TemplateElement Macro_Global_IfDifferent (TemplateFragmentMacro fragment)
@@ -236,7 +236,8 @@ namespace CaptainHook.Mail
 		{
 			List<TemplateElementArgument> arguments = GetElementArgumentList (fragment);
 			return new TemplateElementMailHeader ("Subject", arguments) {
-				SkipNewlineIfLineEmpty = true
+				SkipNewlineIfLineEmpty = true,
+				IgnoreEqualsSign = true
 			};
 		}
 

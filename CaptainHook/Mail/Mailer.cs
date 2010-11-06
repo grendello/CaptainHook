@@ -103,10 +103,10 @@ namespace CaptainHook.Mail
 				smtp.Credentials = smtpConfig.Credentials;
 				smtp.Send (message);
 			} catch (SmtpException ex) {
-				Log (ex, "Failure code: {0}", ex.StatusCode);
+				Log (ex, "While sending mail. SMTP failure code: {4}.\n{0}", ex.StatusCode);
 				return false;
 			} catch (Exception ex) {
-				Log (ex);
+				Log (ex, "While sending mail.\n{0}");
 				return false;
 			} finally {
 				if (message != null)

@@ -1,8 +1,8 @@
 // 
-//  Authors:
+//  Author:
 //    Marek Habersack grendel@twistedcode.net
 // 
-//  Copyright (c) 2010, Novell, Inc (http://novell.com/)
+//  Copyright (c) 2010, Marek Habersack
 // 
 //  All rights reserved.
 // 
@@ -11,7 +11,7 @@
 //     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in
 //       the documentation and/or other materials provided with the distribution.
-//     * Neither the name of Novell, Inc nor names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//     * Neither the name of Marek Habersack nor names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 // 
 //  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 //  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -25,30 +25,23 @@
 //  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // 
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System;
+using System.Net;
 
-// Information about this assembly is defined by the following attributes. 
-// Change them to the values specific to your project.
+namespace CaptainHook.GitHub
+{
+	public class CHWebClient : WebClient
+	{
+		protected override WebRequest GetWebRequest (Uri address)
+		{
+			WebRequest req = base.GetWebRequest (address);
+			HttpWebRequest httpReq = req as HttpWebRequest;
 
-[assembly: AssemblyTitle("CaptainHook")]
-[assembly: AssemblyDescription("CaptainHook - a post-receive GitHub webhook")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Novell, Inc")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("(c) 2010, Novell Inc")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+			if (httpReq != null)
+				httpReq.AutomaticDecompression = DecompressionMethods.GZip;
+			req.Timeout = 60000;
 
-// The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
-// The form "{Major}.{Minor}.*" will automatically update the build and revision,
-// and "{Major}.{Minor}.{Build}.*" will update just the revision.
-
-[assembly: AssemblyVersion("0.2.0.0")]
-
-// The following attributes are used to specify the signing key for the assembly, 
-// if desired. See the Mono documentation for more information about signing.
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
-
+			return req;
+		}
+	}
+}

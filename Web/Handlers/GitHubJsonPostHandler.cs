@@ -45,8 +45,8 @@ namespace CaptainHook.Web.Handlers
 	{
 		sealed class SenderState
 		{
-			public string CsDataDir { get; set; }
-			public string CommitSourceID { get; set; }
+			public string CsDataDir;
+			public string CommitSourceID;
 		}
 
 		static readonly object senderDirectoryLock = new object ();
@@ -199,7 +199,8 @@ namespace CaptainHook.Web.Handlers
 							Log (LogSeverity.Warning, "Failed to delete work item '{0}', the mail message might be sent twice. Exception {1} was thrown: {2}",
 								filePath, ex.GetType (), ex.Message);
 						}
-					}
+					} else
+						PutWorkItemBack (filePath, ignoreWorkItems);
 				} catch (Exception ex) {
 					Log (ex, "Attempt to send work item '{4}' failed. Exception {1} was thrown: {2}", Path.GetFileName (filePath));
 					PutWorkItemBack (filePath, ignoreWorkItems);

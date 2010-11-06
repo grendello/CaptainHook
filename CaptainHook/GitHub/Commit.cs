@@ -51,7 +51,7 @@ namespace CaptainHook.GitHub
 		
 		public bool FetchDiff (Push push)
 		{
-			WebClient client = new WebClient ();
+			WebClient client = new CHWebClient ();
 			string url = String.Format ("http://github.com/api/v2/json/commits/show/{0}/{1}/{2}",
 						    push.Repository.Owner.Name,
 						    push.Repository.Name,
@@ -65,16 +65,16 @@ namespace CaptainHook.GitHub
 				if (wrapper != null) {
 					var diff = wrapper.Commit;
 					if (!diff.FetchBlobs (push)) {
-						Log (LogSeverity.Error, "Failed to fetch blobs for commit '{0}'", ID);
+						Log (LogSeverity.Error, "Failed to fetch blobs for commit '{0}' from URL '{1}'", ID, url);
 						return false;
 					}
 					Diff = diff;
 				} else {
-					Log (LogSeverity.Error, "Failed to fetch diff for commit '{0}'", ID);
+					Log (LogSeverity.Error, "Failed to fetch diff for commit '{0}' from URL '{1}'", ID, url);
 					return false;
 				}
 			} catch (Exception ex) {
-				Log (ex);
+				Log (ex, "Exception while fetching diff for commit '{0}' from URL '{1}'", ID, url);
 				return false;
 			}
 			

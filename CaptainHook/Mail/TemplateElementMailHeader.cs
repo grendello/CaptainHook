@@ -40,6 +40,7 @@ namespace CaptainHook.Mail
 		}
 		
 		public string Name { get; set; }
+		public bool IgnoreEqualsSign { get; set; }
 
 		public TemplateElementMailHeader (List<TemplateElementArgument> arguments)
 		{
@@ -68,6 +69,9 @@ namespace CaptainHook.Mail
 				sb.Append (arg.Generate (data));
 
 			string ret = sb.ToString ();
+			if (IgnoreEqualsSign)
+				return ret;
+
 			int eq = ret.IndexOf ('=');
 			if (eq == -1)
 				return ret;
