@@ -74,7 +74,7 @@ namespace CaptainHook.GitHub
 					return false;
 				}
 			} catch (Exception ex) {
-				Log (ex, "Exception while fetching diff for commit '{0}' from URL '{1}'", ID, url);
+				Log (ex, "Exception while fetching diff for commit '{4}' from URL '{5}'", ID, url);
 				return false;
 			}
 			
