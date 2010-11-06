@@ -60,6 +60,7 @@ namespace CaptainHook.GitHub
 			string response;
 			try {
 				response = client.DownloadString (url);
+				Throttle (client);
 				var jdes = new JsonDeserializer ();
 				var wrapper = jdes.Deserialize<CommitWithDiffJsonWrapper> (response);
 				if (wrapper != null) {
@@ -74,7 +75,7 @@ namespace CaptainHook.GitHub
 					return false;
 				}
 			} catch (Exception ex) {
-				Log (ex, "Exception while fetching diff for commit '{4}' from URL '{5}'", ID, url);
+				Log (ex, "Exception while fetching diff for commit '{4}' from URL '{5}'\n{0}", ID, url);
 				return false;
 			}
 			
@@ -82,3 +83,4 @@ namespace CaptainHook.GitHub
 		}
 	}
 }
+

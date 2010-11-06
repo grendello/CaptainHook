@@ -107,6 +107,7 @@ namespace CaptainHook.GitHub
 				blob = Fetch (client, url, file);
 				if (blob == null)
 					return false;
+				Throttle (client);
 				list.Add (blob);
 			}
 
