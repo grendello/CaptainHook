@@ -26,6 +26,7 @@
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -110,6 +111,7 @@ namespace CaptainHook.Web.Handlers
 			if (underscore == -1 || !path.EndsWith (".github")) {
 				Log (LogSeverity.Error, "Invalid URL format. Expected: authid_csid.github.");
 				InvalidRequest (context.Response, 400);
+				return;
 			}
 
 			path = path.Substring (0, path.Length - 7);
@@ -200,15 +202,16 @@ namespace CaptainHook.Web.Handlers
 
 			while (true) {
 				filePath = GetNextWorkItem (senderState);
-				if (String.IsNullOrEmpty (filePath))
+				if (filePath == null)
 					break;
 
 				var sws = new SenderWorkerState () {
 					State = senderState,
 					WorkItemPath = filePath
 				};
-
-				ThreadPool.QueueUserWorkItem (SenderWorker, sws);
+				Thread th = new Thread (_ => { SenderWorker (sws); });
+				th.IsBackground = true;
+				th.Start ();
 			}
 		}
 
@@ -314,14 +317,13 @@ namespace CaptainHook.Web.Handlers
 			}
 		}
 
-		void InvalidRequest (HttpResponse response, int statusCode)
+		static void InvalidRequest (HttpResponse response, int statusCode)
 		{
-			response.ContentType = "text/html";
-			response.StatusCode = statusCode;
 			response.Clear ();
+			response.ContentType = "text/plain";
+			response.StatusCode = statusCode;
 
 			response.Write ("Invalid request.");
-			response.End ();
 		}
 	}
 }

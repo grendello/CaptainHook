@@ -26,6 +26,7 @@
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // 
 using System;
+using System.Net;
 
 using CaptainHook.Utils;
 
@@ -82,6 +83,24 @@ namespace CaptainHook.Base
 				
 				Log (LogSeverity.Error, format, newParams);
 			}
+		}
+
+		protected void Throttle (WebClient client)
+		{
+			string rate_limit = client.ResponseHeaders ["X-RateLimit-Remaining"];
+			if (String.IsNullOrEmpty (rate_limit))
+				return;
+
+			uint limit;
+			if (!UInt32.TryParse (rate_limit, out limit))
+				return;
+
+			int sleep = 60 - (int) limit;
+			if (sleep < 0 || sleep > 60) {
+				Log (LogSeverity.Error, "Need to update rate limit");
+				return;
+			}
+			System.Threading.Thread.Sleep (sleep * 1000);
 		}
 	}
 }
