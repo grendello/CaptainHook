@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Xml;
 
@@ -40,12 +41,15 @@ namespace CaptainHook.Utils
 		const string DEFAULT_BASE_TEMPLATE_PATH = "templates";
 		
 		static Config instance;
-
+		static readonly string chVersionString;
+		
 		string directorySeparatorString;
 		Dictionary <string, CommitSource> commitSources;
 		string fullBaseTemplatePath;
 		string rootPath;
 		string baseTemplatePath;
+		string gitHubLogin;
+		string gitHubApiToken;
 		
 		public Dictionary <string, CommitSource> CommitSources {
 			get {
@@ -55,10 +59,37 @@ namespace CaptainHook.Utils
 				return commitSources;
 			}
 		}
+		
+		public string GitHubLogin { 
+			get {
+				if (String.IsNullOrEmpty (gitHubLogin)) {
+					Log (LogSeverity.Error, "Missing GitHub Login setting in configuration. Requests to GitHub will fail.");
+					return String.Empty;
+				}
+				return gitHubLogin;
+			}
 
+			set { gitHubLogin = value; }
+		}
+		public string GitHubApiToken { 
+			get {
+				if (String.IsNullOrEmpty (gitHubApiToken)) {
+					Log (LogSeverity.Error, "Missing GitHub API Token setting in configuration. Requests to GitHub will fail.");
+					return String.Empty;
+				}
+				return gitHubApiToken;
+			}
+
+			set { gitHubApiToken = value; }
+		}
+		
+		public string Version { 
+			get { return chVersionString; }
+		}
 		public bool Debug { get; set; }
 		public SmtpServerConfig SmtpServer { get; set; }
-
+		public uint PeriodicSenderInterval { get; set; }
+		
 		public string RootPath {
 			get { return rootPath; }
 			
@@ -108,13 +139,20 @@ namespace CaptainHook.Utils
 		static Config ()
 		{
 			instance = new Config ();
+			Assembly asm = typeof (Config).Assembly;
+			Version version = asm.GetName ().Version;
+			if (version != null)
+				chVersionString = String.Format ("CaptainHook {0}.{1}", version.Major, version.Minor);
+			else
+				chVersionString = "CaptainHook X.Y";
 		}
 		
 		Config ()
 		{
 			RootPath = Directory.GetCurrentDirectory ();
 			BaseTemplatePath = DEFAULT_BASE_TEMPLATE_PATH;
-			
+			PeriodicSenderInterval = 300;
+
 			char ch = Path.DirectorySeparatorChar;
 			if (ch != '/')
 				directorySeparatorString = ch.ToString ();
@@ -147,6 +185,17 @@ namespace CaptainHook.Utils
 
 			ReadOptions (doc.SelectSingleNode ("//CaptainHook/options"));
 			ReadCommitSources (doc.SelectNodes ("//CaptainHook/commitSource"));
+		}
+
+		void ReadGitHubApiSettings (XmlNode credentials)
+		{
+			if (credentials == null) {
+				Log (LogSeverity.Error, "Required configuration element <options><gitHubApiCredentials/></options> is missing.");
+				return;
+			}
+			
+			GitHubLogin = credentials.Attributes.GetRequired <string> ("login");
+			GitHubApiToken = credentials.Attributes.GetRequired <string> ("token");
 		}
 
 		void ReadCommitSources (XmlNodeList sources)
@@ -190,6 +239,12 @@ namespace CaptainHook.Utils
 				}
 			}
 			SmtpServer = smtpCfg;
+			
+			node = options.SelectSingleNode ("//periodicSender");
+			if (node != null)
+				PeriodicSenderInterval = node.Attributes.GetRequired <uint> ("interval");
+			
+			ReadGitHubApiSettings (node.SelectSingleNode ("//gitHubApiCredentials"));
 		}
 	}
 }

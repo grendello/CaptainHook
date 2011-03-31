@@ -27,10 +27,12 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 using CaptainHook.Base;
 using CaptainHook.GitHub;
+using CaptainHook.Utils;
 
 namespace CaptainHook.Mail
 {
@@ -50,11 +52,12 @@ namespace CaptainHook.Mail
 
 		static readonly string newline = Environment.NewLine;
 		static readonly char[] argumentSplitChars = { ',' };
-
+		
 		Dictionary <string, MacroMapEntry> macroMap;
 		string basePath;
 		string commitSourceID;
-
+		
+		
 		public TemplateElementFactory (string basePath, string commitSourceID)
 		{
 			this.basePath = basePath;
@@ -194,8 +197,7 @@ namespace CaptainHook.Mail
 
 		TemplateElement Macro_Global_Version (TemplateFragmentMacro fragment)
 		{
-			// TODO: generate the version from assembly metadata
-			return new TemplateElementText ("CaptainHook 0.2");
+			return new TemplateElementText (Config.Instance.Version);
 		}
 
 		TemplateElement Macro_Global_IfDifferent (TemplateFragmentMacro fragment)

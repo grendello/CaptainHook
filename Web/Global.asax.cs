@@ -32,14 +32,19 @@ using System.Web.Hosting;
 using System.Web.Configuration;
 
 using CaptainHook.Utils;
+using CaptainHook.Web.Processing;
 
 namespace CaptainHook.Web
 {
 	public class Global : HttpApplication
 	{
+		PeriodicSender periodicSender;
+
 		protected virtual void Application_Start (object sender, EventArgs e)
 		{
-			string configDir = WebConfigurationManager.AppSettings["ConfigDirectory"];
+			Config config = Config.Instance;
+			Console.Error.WriteLine (config.Version + " starting");
+			string configDir = WebConfigurationManager.AppSettings ["ConfigDirectory"];
 			if (String.IsNullOrEmpty (configDir))
 				throw new InvalidOperationException ("ConfigDirectory application setting must be present in web.config");
 			configDir = HostingEnvironment.MapPath (configDir);
@@ -51,33 +56,33 @@ namespace CaptainHook.Web
 			if (!File.Exists (configFile))
 				throw new InvalidOperationException ("Config file must exist.");
 
-			Config config = Config.Instance;
 			config.RootPath = configDir;
 			config.LoadConfigFile (configFile);
 
 			string csDataDir = Path.Combine (Config.Instance.RootPath, "data");
-			if (!Directory.Exists (csDataDir))
-				return;
-
-			try {
-				string[] files = Directory.GetFiles (csDataDir, "*.json.processing", SearchOption.AllDirectories);
-				if (files == null || files.Length == 0)
-					return;
-
-				string newFile;
-				foreach (string f in files) {
-					newFile = f.Substring (0, f.Length - 11);
-					try {
-						File.Move (f, newFile);
-					} catch (Exception ex) {
-						Console.Error.WriteLine ("Error moving {0} to {1}", f, newFile);
-						Console.Error.WriteLine (ex);
+			if (Directory.Exists (csDataDir)) {
+				try {
+					string[] files = Directory.GetFiles (csDataDir, "*.json.processing", SearchOption.AllDirectories);
+					if (files != null && files.Length > 0) {
+						string newFile;
+						foreach (string f in files) {
+							newFile = f.Substring (0, f.Length - 11);
+							try {
+								File.Move (f, newFile);
+							} catch (Exception ex) {
+								Console.Error.WriteLine ("Error moving {0} to {1}", f, newFile);
+								Console.Error.WriteLine (ex);
+							}
+						}
 					}
+				} catch (Exception ex) {
+					Console.Error.WriteLine ("Error processing stale files on application startup:");
+					Console.Error.WriteLine (ex);
 				}
-			} catch (Exception ex) {
-				Console.Error.WriteLine ("Error processing stale files on application startup:");
-				Console.Error.WriteLine (ex);
 			}
+			CachingFetcher.Init ();
+			periodicSender = new PeriodicSender ();
+			periodicSender.Init ();
 		}
 	}
 }

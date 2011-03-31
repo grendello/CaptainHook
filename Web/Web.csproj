@@ -52,12 +52,17 @@
     <Folder Include="App_Data\" />
     <Folder Include="Handlers\" />
     <Folder Include="App_Data\templates\" />
+    <Folder Include="Processing\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Handlers\GitHubJsonPostHandler.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Processing\CommitSender.cs" />
+    <Compile Include="Processing\SenderWorkerState.cs" />
+    <Compile Include="Processing\SenderState.cs" />
+    <Compile Include="Processing\PeriodicSender.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />

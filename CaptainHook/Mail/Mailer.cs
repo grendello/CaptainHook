@@ -79,8 +79,10 @@ namespace CaptainHook.Mail
 				throw new ArgumentNullException ("item");
 
 			List<Commit> commits = item.Commits;
-			if (commits == null || commits.Count == 0)
+			if (commits == null || commits.Count == 0) {
+				Log (LogSeverity.Info, "Push has no commits. Not sending mails.");
 				return false;
+			}
 			SmtpServerConfig smtpConfig = Config.Instance.SmtpServer;
 			MailMessage message = null;
 

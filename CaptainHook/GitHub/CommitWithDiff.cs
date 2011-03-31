@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Web;
 
 using CaptainHook.Base;
 using CaptainHook.Utils;
@@ -96,18 +97,17 @@ namespace CaptainHook.GitHub
 			if (added == null || added.Count == 0)
 				return true;
 
-			string urlFormat = "http://github.com/api/v2/json/blob/show/{0}/{1}/{2}/{3}";
-			string url;
 			Blob blob;
 			var list = new List<Blob> ();
-			WebClient client = new WebClient ();
-
+			string ownerName = push.Repository.Owner.Name;
+			string repositoryName = push.Repository.Name;
+			string tree = Tree;
+			string commitSource = push.CHAuthID;
+			
 			foreach (string file in added) {
-				url = String.Format (urlFormat, push.Repository.Owner.Name, push.Repository.Name, Tree, file);
-				blob = Fetch (client, url, file);
+				blob = Fetch (commitSource, repositoryName, ownerName, tree, file);
 				if (blob == null)
 					return false;
-				Throttle (client);
 				list.Add (blob);
 			}
 
@@ -119,22 +119,31 @@ namespace CaptainHook.GitHub
 			return true;
 		}
 
-		Blob Fetch (WebClient client, string url, string filePath)
+		Blob Fetch (string commitSource, string repositoryName, string repositoryOwner, string tree, string file)
 		{
 			string response;
+			string url = null;
 			try {
-				response = client.DownloadString (url);
+				response = CachingFetcher.FetchBlob (commitSource, repositoryOwner, repositoryName, tree, file, out url);
 				var jdes = new JsonDeserializer ();
 				var wrapper = jdes.Deserialize<BlobJsonWrapper> (response);
 				if (wrapper != null) {
 					var blob = wrapper.Blob;
 					if (blob == null)
-						Log (LogSeverity.Error, "Empty blob for commit '{0}', file '{1}'", ID, filePath);
+						Log (LogSeverity.Error, "Empty blob for commit '{0}', file '{1}'", ID, file);
 					return blob;
 				} else {
-					Log (LogSeverity.Error, "Failed to fetch blob for commit '{0}', file '{1}'", ID, filePath);
+					Log (LogSeverity.Error, "Failed to fetch blob for commit '{0}', file '{1}'", ID, file);
 					return null;
 				}
+			} catch (WebException ex) {
+				var resp = ex.Response as HttpWebResponse;
+				if (resp != null && resp.StatusCode == HttpStatusCode.NotFound)
+					Log (ex, "A HTTP NotFound error while fetching blob for commit '{4}'. Failed URL was '{5}'.\n{0}",
+						ID, url);
+				else
+					Log (ex);
+				return null;
 			} catch (Exception ex) {
 				Log (ex);
 				return null;

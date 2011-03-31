@@ -11,6 +11,14 @@
     <!-- If not present, defaults to localhost:25 and no credentials. If you're hosting the handler under Mono and
          attempts to use SMTPAUTH with TLS fail, please read http://www.mono-project.com/FAQ:_Security#Does_SSL_works_for_SMTP.2C_like_GMail_.3F -->
     <smtpServer host="mysmtp.host" port="587" enableSSL="true" user="myuser" password="mypassword"/>
+    
+    <!-- Periodically send all commit source data directories for pending posts. The 'interval' attribute is specified in seconds,
+         300 being the default, 0 to disable periodic checking. -->
+    <!-- <periodicSender interval="300"/> -->
+    
+    <!-- GitHub API credentials - both attributes are REQUIRED. The API Token for your account can be found in your GitHub account settings
+         (Account Settings -> Account Admin) -->
+    <gitHubApiCredentials login="" token=""/>
   </options>
 
   <!-- Each commit source must have a unique ID -->

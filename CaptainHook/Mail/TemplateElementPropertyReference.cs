@@ -114,6 +114,10 @@ namespace CaptainHook.Mail
 				return sb.ToString ();
 			}
 
+			// TODO: make the date format configurable (preferably right in the template, as a macro parameter)
+			if (typeof (TData) == typeof (DateTime))
+				return ((DateTime)value).ToString ("R");
+
 			return value.ToString ();
 		}
 

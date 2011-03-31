@@ -39,55 +39,24 @@ using CaptainHook.Base;
 using CaptainHook.GitHub;
 using CaptainHook.Mail;
 using CaptainHook.Utils;
+using CaptainHook.Web.Processing;
 
 namespace CaptainHook.Web.Handlers
 {
 	sealed class GitHubJsonPostHandler : CommonBase, IHttpHandler
 	{
-		sealed class SenderState
-		{
-			object ignoresLock = new object ();
-			Dictionary <string, bool> ignoredFiles;
-
-			public string CsDataDir;
-			public string CommitSourceID;
-			public JsonDeserializer Deserializer;
-
-			public void Ignore (string filePath)
-			{
-				lock (ignoresLock) {
-					if (ignoredFiles == null)
-						ignoredFiles = new Dictionary<string, bool> (StringComparer.Ordinal);
-					if (ignoredFiles.ContainsKey (filePath))
-						return;
-					ignoredFiles.Add (filePath, true);
-				}
-			}
-
-			public bool IsIgnored (string filePath)
-			{
-				lock (ignoresLock) {
-					if (ignoredFiles == null || ignoredFiles.Count == 0)
-						return false;
-					return ignoredFiles.ContainsKey (filePath);
-				}
-			}
-		}
-
-		sealed class SenderWorkerState
-		{
-			public string WorkItemPath;
-			public SenderState State;
-		}
-
-		static readonly object senderDirectoryLock = new object ();
-
 		const int INPUT_BUFFER_LENGTH = 4096;
-
+		CommitSender commitSender;
+		
 		public bool IsReusable {
 			get { return true; }
 		}
-
+		
+		public GitHubJsonPostHandler ()
+		{
+			this.commitSender = new CommitSender ();
+		}
+		
 		public void ProcessRequest (HttpContext context)
 		{
 			if (context == null) {
@@ -182,139 +151,10 @@ namespace CaptainHook.Web.Handlers
 				return;
 			}
 
-			var state = new SenderState () {
+			commitSender.Send (new SenderState () {
 				CsDataDir = csDataDir,
 				CommitSourceID = commitSourceID
-			};
-			ThreadPool.QueueUserWorkItem (Sender, state);
-		}
-
-		void Sender (object state)
-		{
-			SenderState senderState = state as SenderState;
-			if (String.IsNullOrEmpty (senderState.CsDataDir)) {
-				Log (LogSeverity.Error, "Need a data directory to work.");
-				return;
-			}
-
-			string filePath;
-			senderState.Deserializer = new JsonDeserializer ();
-
-			while (true) {
-				filePath = GetNextWorkItem (senderState);
-				if (filePath == null)
-					break;
-
-				var sws = new SenderWorkerState () {
-					State = senderState,
-					WorkItemPath = filePath
-				};
-				Thread th = new Thread (_ => { SenderWorker (sws); });
-				th.IsBackground = true;
-				th.Start ();
-			}
-		}
-
-		void SenderWorker (object state)
-		{
-			SenderWorkerState sws = state as SenderWorkerState;
-			if (sws == null) {
-				Log (LogSeverity.Error, "Internal error - SenderWorker got a null state.");
-				return;
-			}
-
-			string filePath = sws.WorkItemPath;
-			SenderState senderState = sws.State;
-			JsonDeserializer des = senderState.Deserializer;
-
-			try {
-				string fileText = HttpUtility.UrlDecode (File.ReadAllText (filePath));
-				if (String.IsNullOrEmpty (fileText)) {
-					Log (LogSeverity.Error, "Empty payload for item '{0}'", filePath);
-					PutWorkItemBack (filePath, senderState);
-					return;
-				}
-
-				if (!fileText.StartsWith ("payload=", StringComparison.Ordinal)) {
-					Log (LogSeverity.Error, "Invalid payload format for item '{0}'", filePath);
-					PutWorkItemBack (filePath, senderState);
-					return;
-				}
-
-				fileText = fileText.Substring (8);
-				Push push = des.Deserialize<Push> (fileText);
-				push.CHAuthID = senderState.CommitSourceID;
-				Mailer mailer = new Mailer ();
-				if (mailer.Send (push)) {
-					try {
-						File.Delete (filePath);
-					} catch (Exception ex) {
-						Log (LogSeverity.Warning, "Failed to delete work item '{0}', the mail message might be sent twice. Exception {1} was thrown: {2}",
-								filePath, ex.GetType (), ex.Message);
-					}
-				} else
-					PutWorkItemBack (filePath, senderState);
-			} catch (Exception ex) {
-				Log (ex, "Attempt to send work item '{4}' failed. Exception {1} was thrown: {2}", Path.GetFileName (filePath));
-				PutWorkItemBack (filePath, senderState);
-			}
-		}
-
-		string GetNextWorkItem (SenderState senderState)
-		{
-			string csDataDir = senderState.CsDataDir;
-			lock (senderDirectoryLock) {
-				string file = null;
-
-				try {
-					string[] files = Directory.GetFiles (csDataDir, "*.json");
-					if (files == null || files.Length == 0)
-						return null;
-
-					Array.Sort<string> (files);
-
-					foreach (string f in files) {
-						if (senderState.IsIgnored (f))
-							continue;
-
-						file = f;
-						break;
-					}
-					if (file == null)
-						return null;
-
-					string newFile = file + ".processing";
-					File.Move (file, newFile);
-
-					return newFile;
-				} catch (Exception ex) {
-					if (!String.IsNullOrEmpty (file))
-						PutWorkItemBack (file + ".processing", senderState);
-					Log (ex, "Failed to retrieve next work item from directory '{4}'. Exception '{1}' was thrown: {2}", csDataDir);
-					return null;
-				}
-			}
-		}
-
-		void PutWorkItemBack (string filePath, SenderState senderState)
-		{
-			if (String.IsNullOrEmpty (filePath))
-				return;
-
-			if (!filePath.EndsWith (".processing", StringComparison.Ordinal) || !File.Exists (filePath))
-				return;
-
-			string newFilePath = filePath.Substring (0, filePath.Length - 11);
-			lock (senderDirectoryLock) {
-				try {
-					File.Move (filePath, newFilePath);
-					Log (LogSeverity.Info, "Puting file '{0}' back in queue.", newFilePath);
-					senderState.Ignore (newFilePath);
-				} catch (Exception ex) {
-					Log (ex, "Failed to put work item file '{4}' back in the queue. Exception '{1} was thrown: {2}", filePath);
-					return;
-				}
-			}
+			});
 		}
 
 		static void InvalidRequest (HttpResponse response, int statusCode)

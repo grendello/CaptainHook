@@ -51,16 +51,12 @@ namespace CaptainHook.GitHub
 		
 		public bool FetchDiff (Push push)
 		{
-			WebClient client = new CHWebClient ();
-			string url = String.Format ("http://github.com/api/v2/json/commits/show/{0}/{1}/{2}",
-						    push.Repository.Owner.Name,
-						    push.Repository.Name,
-						    ID);
-
-			string response;
+			string url = null;
 			try {
-				response = client.DownloadString (url);
-				Throttle (client);
+				string response = CachingFetcher.FetchDiff (push.CHAuthID, push.Repository.Owner.Name, push.Repository.Name, ID, out url);
+				if (response == null)
+					return false;
+				
 				var jdes = new JsonDeserializer ();
 				var wrapper = jdes.Deserialize<CommitWithDiffJsonWrapper> (response);
 				if (wrapper != null) {
@@ -79,7 +75,11 @@ namespace CaptainHook.GitHub
 				return false;
 			}
 			
-			return Diff != null;
+			CommitWithDiff ret = Diff;
+			if (ret == null)
+				Log (LogSeverity.Info, "FetchDiff did not fail, but no diff retrieved?");
+			
+			return ret != null;
 		}
 	}
 }

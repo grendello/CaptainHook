@@ -27,6 +27,7 @@
 // 
 using System;
 using System.Net;
+using System.Threading;
 
 using CaptainHook.Utils;
 
@@ -34,16 +35,18 @@ namespace CaptainHook.Base
 {
 	public class CommonBase
 	{
-		protected void Log (LogSeverity severity, string format, params object[] parms)
+		const int rateLimitSleep = 60 * 1000;
+		
+		protected static void Log (LogSeverity severity, string format, params object[] parms)
 		{
 			if (severity == LogSeverity.Debug && !Config.Instance.Debug)
 				return;
 
-			Console.Error.Write ("{0}: ", severity);
+			Console.Error.Write ("*CaptainHook {0}*: ", severity);
 			Console.Error.WriteLine (format, parms);
 		}
 
-		protected void Log (Exception ex)
+		protected static void Log (Exception ex)
 		{
 			Log (ex, null);
 			if (Config.Instance.Debug) {
@@ -62,7 +65,7 @@ namespace CaptainHook.Base
 		//
 		// Your paramters, if any, start at {4}
 		//
-		protected void Log (Exception ex, string format, params object[] parms)
+		protected static void Log (Exception ex, string format, params object[] parms)
 		{
 			if (ex == null)
 				return;
@@ -85,22 +88,25 @@ namespace CaptainHook.Base
 			}
 		}
 
-		protected void Throttle (WebClient client)
+		protected static void Throttle (WebClient client)
 		{
 			string rate_limit = client.ResponseHeaders ["X-RateLimit-Remaining"];
 			if (String.IsNullOrEmpty (rate_limit))
 				return;
-
+			
+			string current_rate_limit = client.ResponseHeaders ["X-RateLimit-Limit"];
+			if (String.IsNullOrEmpty (current_rate_limit))
+				current_rate_limit = "60";
+			Log (LogSeverity.Debug, "GitHub rate limit: {1}; remaining: {0}", rate_limit, current_rate_limit);
 			uint limit;
 			if (!UInt32.TryParse (rate_limit, out limit))
 				return;
-
-			int sleep = 60 - (int) limit;
-			if (sleep < 0 || sleep > 60) {
-				Log (LogSeverity.Error, "Need to update rate limit");
+			
+			if (limit > 1)
 				return;
-			}
-			System.Threading.Thread.Sleep (sleep * 1000);
+			
+			Log (LogSeverity.Info, "[{0}] Throttling the current request, GitHub rate limit exceeded. Sleeping for {1}s", Thread.CurrentThread.ManagedThreadId, rateLimitSleep / 1000);
+			System.Threading.Thread.Sleep (rateLimitSleep);
 		}
 	}
 }
